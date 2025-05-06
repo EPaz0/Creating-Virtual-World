@@ -1,0 +1,59 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Blocky Animal</title>
+  </head>
+
+  <body onload="main()">
+    Enrique Paz Gonzalez
+    <p></p>epazgonz@uscs.edu
+    <p></p>
+    <canvas id="webgl" width="400" height="400">
+    Please use a browser that supports "canvas"
+    </canvas>
+    <br />
+    <p>
+      Animation:
+      <p>
+      Upper Arms: 
+      <button type = "button" id="armAnimationStart">On</button>
+      <button type = "button" id="armAnimationEnd">Off</button>
+      Lower Arms: 
+      <button type = "button" id="lowerArmAnimationStart">On</button>
+      <button type = "button" id="lowerArmAnimationEnd">Off</button>
+      <p>
+        Head: 
+        <button type = "button" id="headAnimationStart">On</button>
+        <button type = "button" id="headAnimationEnd">Off</button>
+      <p>
+        Legs:
+        <button type = "button" id="legAnimationStart">On</button>
+        <button type = "button" id="legAnimationEnd">Off</button>
+      <p>
+    Camera Angle: <input type="range"  min="0" max="270" value="0" class = "slider" id="angleSlide" />
+    <p>
+    Arms: <input type="range"  min="0" max="120" value="0" class = "slider" id="leftArmAngle" />
+    <p>
+    Lower Arms: <input type="range"  min="-120" max="120" value="0" class = "slider" id="lowerArmAngle" />
+    <p>
+
+      Head: <input type="range"  min="-120" max="120" value="0" class = "slider" id="headAngle" />
+      <p>
+        Legs: <input type="range"  min="-.1" max=".1" value="0" step="0.005" class = "slider" id="legAngle" />
+      <p>
+
+    <script src="lib/webgl-utils.js"></script>
+    <script src="lib/webgl-debug.js"></script>
+    <script src="lib/cuon-utils.js"></script>
+    <script src="lib/cuon-matrix.js"></script>
+    <script src="lib/stats.min.js"></script>
+    <script src="Point.js"></script>
+    <script src="Triangle.js"></script>
+    <script src="Circle.js"></script>
+    <script src="Cube.js"></script>
+    <script src="Cylinder.js"></script>
+    <script src="World.js"></script>
+  </body>
+</html>
