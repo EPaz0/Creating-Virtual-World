@@ -419,6 +419,9 @@ function updateAnimationAngles(){
   }
 }
 
+var g_eye =[0,0,3]; // The camera position (eye point)
+var g_at  =[0,0,-100]; // The camera looks at the origin (0,0,0)
+var g_up  =[0,1,0]; // The up vector points to positive Y direction
 
 //Draw every shape that is supposed to be in the canvas
 function renderAllShapes(){
@@ -426,12 +429,21 @@ function renderAllShapes(){
   var startTime = performance.now(); // Start time
 
 
+
+//Pass the projection matrix to u_ProjectionMatrix attribute
 var projMat = new Matrix4(); // Create a matrix object
+projMat.setPerspective(60, canvas.width/canvas.height, .1, 100); // Set the perspective projection matrix
 gl.uniformMatrix4fv(u_ProjectionMatrix, false, projMat.elements); // Pass the matrix to u_ProjectionMatrix attribute
 
+
+//Pass the view matrix to u_ViewMatrix attribute
 var viewMat = new Matrix4(); // Create a matrix object
+viewMat.setLookAt(g_eye[0], g_eye[1], g_eye[2],  // eye position
+                  g_at[0], g_at[1], g_at[2],  // look at the origin
+                  g_up[0], g_up[1], g_up[2]); // up vector
 gl.uniformMatrix4fv(u_ViewMatrix, false, viewMat.elements); // Pass the matrix to u_ViewMatrix attribute
 
+//Pass the global rotation matrix to u_GlobalRotateMatrix attribute
 var u_GlobalRotateMat = new Matrix4().rotate(g_globalAngle,0,1,0); // Create a matrix object
 gl.uniformMatrix4fv(u_GlobalRotateMatrix, false, u_GlobalRotateMat.elements); // Pass the matrix to u_GlobalRotateMatrix attribute
 
