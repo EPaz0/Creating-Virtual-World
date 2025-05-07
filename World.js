@@ -19,11 +19,12 @@ var VSHADER_SOURCE = `
   varying vec2 v_UV;
   uniform mat4  u_ModelMatrix;
   uniform mat4 u_GlobalRotateMatrix;
+  uniform mat4 u_ViewMatrix;
   uniform mat4 u_ProjectionMatrix;
 
   void main()  {
 
-  gl_Position =  u_GlobalRotateMatrix * u_ModelMatrix * a_Position;
+  gl_Position = u_ProjectionMatrix * u_ViewMatrix * u_GlobalRotateMatrix * u_ModelMatrix * a_Position;
   v_UV = a_UV;
   }`
 //  
@@ -62,6 +63,9 @@ let u_Size;
 let u_ModelMatrix; 
 let u_Sampler0;
 let u_whichTexture;
+let u_GlobalRotateMatrix; // Global rotation matrix
+let u_ViewMatrix; // View matrix
+let u_ProjectionMatrix; // Projection matrix
 
 function setupWebGL() {
   // Retrieve <canvas> element
@@ -119,6 +123,19 @@ function connectVariablesToGLSL() {
     console.log('Failed to get the storage location of u_GlobalRotateMatrix');
     return;
   }
+
+  u_ProjectionMatrix = gl.getUniformLocation(gl.program, 'u_ProjectionMatrix');
+  if (!u_ProjectionMatrix) {
+    console.log('Failed to get the storage location of u_ProjectionMatrix');
+    return;
+  }
+
+  u_ViewMatrix = gl.getUniformLocation(gl.program, 'u_ViewMatrix');
+  if (!u_ViewMatrix) {
+    console.log('Failed to get the storage location of u_ViewMatrix');
+    return;
+  }
+
 
     //Get the storage locaiton of u_Sampler
     u_Sampler0 = gl.getUniformLocation(gl.program, 'u_Sampler0');
@@ -408,12 +425,22 @@ function renderAllShapes(){
 
   var startTime = performance.now(); // Start time
 
-  // var u_GlobalRotateMat = new Matrix4().rotate(g_globalAngle,0,1,0); // Create a matrix object
-  var u_GlobalRotateMat = new Matrix4();
-  u_GlobalRotateMat.rotate(g_camYaw,   0, 1, 0);   // yaw around Y
-  u_GlobalRotateMat.rotate(g_camPitch, 1, 0, 0);   // pitch around X
-  u_GlobalRotateMat.scale(g_zoom, g_zoom, g_zoom); // wheel zoom
-  gl.uniformMatrix4fv(u_GlobalRotateMatrix, false, u_GlobalRotateMat.elements); // Pass the matrix to u_GlobalRotateMatrix attribute
+
+var projMat = new Matrix4(); // Create a matrix object
+gl.uniformMatrix4fv(u_ProjectionMatrix, false, projMat.elements); // Pass the matrix to u_ProjectionMatrix attribute
+
+var viewMat = new Matrix4(); // Create a matrix object
+gl.uniformMatrix4fv(u_ViewMatrix, false, viewMat.elements); // Pass the matrix to u_ViewMatrix attribute
+
+var u_GlobalRotateMat = new Matrix4().rotate(g_globalAngle,0,1,0); // Create a matrix object
+gl.uniformMatrix4fv(u_GlobalRotateMatrix, false, u_GlobalRotateMat.elements); // Pass the matrix to u_GlobalRotateMatrix attribute
+
+  // // var u_GlobalRotateMat = new Matrix4().rotate(g_globalAngle,0,1,0); // Create a matrix object
+  // var u_GlobalRotateMat = new Matrix4();
+  // u_GlobalRotateMat.rotate(g_camYaw,   0, 1, 0);   // yaw around Y
+  // u_GlobalRotateMat.rotate(g_camPitch, 1, 0, 0);   // pitch around X
+  // u_GlobalRotateMat.scale(g_zoom, g_zoom, g_zoom); // wheel zoom
+  // gl.uniformMatrix4fv(u_GlobalRotateMatrix, false, u_GlobalRotateMat.elements); // Pass the matrix to u_GlobalRotateMatrix attribute
 
   // Clear <canvas>
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
