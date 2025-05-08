@@ -67,6 +67,8 @@ let u_GlobalRotateMatrix; // Global rotation matrix
 let u_ViewMatrix; // View matrix
 let u_ProjectionMatrix; // Projection matrix
 
+let camera;
+
 function setupWebGL() {
   // Retrieve <canvas> element
   canvas = document.getElementById('webgl');
@@ -153,8 +155,6 @@ function connectVariablesToGLSL() {
   //set an intital value for this matrix to identity
   var identityM = new Matrix4(); // Create a matrix object
   gl.uniformMatrix4fv(u_ModelMatrix, false, identityM.elements); // Pass the matrix to u_ModelMatrix attribute
-
-
 }
 
 function initTextures(){
@@ -273,6 +273,35 @@ function addActionForHtmlElement() {
     
     renderAllShapes(); // Redraw the shapes with the new angle
   });
+
+
+  window.addEventListener('keydown', (e) => {
+    const speed = 0.2;
+    switch (e.key.toLowerCase()) {
+      case 'w': camera.moveForward(speed);    break;
+      case 's': camera.moveBackwards(speed);  break;
+      case 'a': camera.moveLeft(speed);       break;
+      case 'd': camera.moveRight(speed);      break;
+      case 'q': camera.panLeft(3);            break; // optional
+      case 'e': camera.panRight(3);           break;
+    }
+    renderAllShapes();        // repaint with new view
+  });
+
+  canvas.addEventListener('click', () => {
+    if (document.pointerLockElement !== canvas) {
+      canvas.requestPointerLock();          // hides the cursor
+    }
+  });
+  document.addEventListener('mousemove', (e) => {
+    if (document.pointerLockElement !== canvas) return;   // not locked
+    const dx = e.movementX;   // pixels since last event
+    const dy = e.movementY;
+    const SENS = 0.25;
+    camera.yaw(  dx * SENS);
+    camera.pitch(-dy * SENS);
+    renderAllShapes();
+  });
 }
 
 
@@ -285,6 +314,10 @@ function main() {
  
   //Set up actions for HTML elements
   addActionForHtmlElement();
+
+  camera = new Camera(canvas);  
+
+  //document.onkeydown = keydown;
 
   initTextures(); // Initialize texture and set up the texture
 
@@ -330,35 +363,28 @@ var g_shapesList = []; // The array for the position of a mouse press
 
 
 function setupMouseCamera() {
-  canvas.onmousedown = function (ev) {
-    g_isDragging = true;
-    g_lastX = ev.clientX;
-    g_lastY = ev.clientY;
-  };
+  const SENS = 0.25;          // deg per pixel – tweak to taste
+  canvas.onmousedown = (ev) => {
+  g_isDragging = true;
+  g_lastX = ev.clientX;
+  g_lastY = ev.clientY;
+};
 
-  canvas.onmousemove = function (ev) {
-    if (!g_isDragging) return;
-    const dx = ev.clientX - g_lastX;
-    const dy = ev.clientY - g_lastY;
-    g_lastX = ev.clientX;
-    g_lastY = ev.clientY;
+canvas.onmousemove = (ev) => {
+  if (!g_isDragging) return;
+  const dx = ev.clientX - g_lastX;
+  const dy = ev.clientY - g_lastY;
+  g_lastX = ev.clientX;
+  g_lastY = ev.clientY;
 
-    const SENS = 0.5;
-    g_camYaw   += dx * SENS;
-    g_camPitch += dy * SENS;
-    g_camPitch = Math.max(-89, Math.min(89, g_camPitch));
+  camera.yaw(  -dx * SENS);   // left / right
+  camera.pitch(-dy * SENS);  // up / down  (invert Y)
 
-    renderAllShapes();
-  };
+  renderAllShapes();
+};
 
-  canvas.onmouseup     =
-  canvas.onmouseleave  = () => (g_isDragging = false);
-
-  canvas.onwheel = (ev) => {
-    g_zoom *= ev.deltaY > 0 ? 1.05 : 0.95;
-    renderAllShapes();
-    ev.preventDefault();
-  };
+canvas.onmouseup    =
+canvas.onmouseleave = () => (g_isDragging = false);
 }
 
 //Extract the event click and return it in WebGL coordinates
@@ -428,24 +454,27 @@ function renderAllShapes(){
 
   var startTime = performance.now(); // Start time
 
+  const gRot = new Matrix4().rotate(g_globalAngle, 0, 1, 0);   // or just new Matrix4()
+  gl.uniformMatrix4fv(u_GlobalRotateMatrix, false, gRot.elements);
 
-
+  //----- old matrices -----
 //Pass the projection matrix to u_ProjectionMatrix attribute
-var projMat = new Matrix4(); // Create a matrix object
-projMat.setPerspective(60, canvas.width/canvas.height, .1, 100); // Set the perspective projection matrix
-gl.uniformMatrix4fv(u_ProjectionMatrix, false, projMat.elements); // Pass the matrix to u_ProjectionMatrix attribute
+// var projMat = new Matrix4(); // Create a matrix object
+// projMat.setPerspective(60, canvas.width/canvas.height, .1, 100); // Set the perspective projection matrix
+// gl.uniformMatrix4fv(u_ProjectionMatrix, false, projMat.elements); // Pass the matrix to u_ProjectionMatrix attribute
 
 
-//Pass the view matrix to u_ViewMatrix attribute
-var viewMat = new Matrix4(); // Create a matrix object
-viewMat.setLookAt(g_eye[0], g_eye[1], g_eye[2],  // eye position
-                  g_at[0], g_at[1], g_at[2],  // look at the origin
-                  g_up[0], g_up[1], g_up[2]); // up vector
-gl.uniformMatrix4fv(u_ViewMatrix, false, viewMat.elements); // Pass the matrix to u_ViewMatrix attribute
+// //Pass the view matrix to u_ViewMatrix attribute
+// var viewMat = new Matrix4(); // Create a matrix object
+// viewMat.setLookAt(g_eye[0], g_eye[1], g_eye[2],  // eye position
+//                   g_at[0], g_at[1], g_at[2],  // look at the origin
+//                   g_up[0], g_up[1], g_up[2]); // up vector
+// gl.uniformMatrix4fv(u_ViewMatrix, false, viewMat.elements); // Pass the matrix to u_ViewMatrix attribute
 
-//Pass the global rotation matrix to u_GlobalRotateMatrix attribute
-var u_GlobalRotateMat = new Matrix4().rotate(g_globalAngle,0,1,0); // Create a matrix object
-gl.uniformMatrix4fv(u_GlobalRotateMatrix, false, u_GlobalRotateMat.elements); // Pass the matrix to u_GlobalRotateMatrix attribute
+// //Pass the global rotation matrix to u_GlobalRotateMatrix attribute
+// var u_GlobalRotateMat = new Matrix4().rotate(g_globalAngle,0,1,0); // Create a matrix object
+// gl.uniformMatrix4fv(u_GlobalRotateMatrix, false, u_GlobalRotateMat.elements); // Pass the matrix to u_GlobalRotateMatrix attribute
+camera.uploadToShader(gl, u_ViewMatrix, u_ProjectionMatrix);
 
   // // var u_GlobalRotateMat = new Matrix4().rotate(g_globalAngle,0,1,0); // Create a matrix object
   // var u_GlobalRotateMat = new Matrix4();
@@ -456,6 +485,24 @@ gl.uniformMatrix4fv(u_GlobalRotateMatrix, false, u_GlobalRotateMat.elements); //
 
   // Clear <canvas>
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+
+  //Draw the floor
+  var floor = new Cube();
+  floor.color = [0.0, .5, 0.0, 1.0]; // Red color
+  floor.textureNum = -2; // Set the texture number to 0
+  floor.matrix.setTranslate(0, -0.75, 0); // Translate the cube to the right
+  floor.matrix.scale(32, 0, 32); // Rotate the cube by 45 degrees around the z-axis
+  floor.matrix.translate(-.5, 0, -.5); // Rotate the cube by 45 degrees around the z-axis
+  floor.render();
+
+  //Draw the sky
+  var sky = new Cube();
+  sky.color = [0.0, 0.0, 1.0, .8]; // blue color
+  sky.textureNum = -2; // Set the texture number to 0
+  sky.matrix.scale(50,50,50);
+  sky.matrix.translate(-.5, -.5, -0.5); // Translate the cube to the right
+  sky.render();
 
   //Head
   var head = new Cube();
