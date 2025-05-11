@@ -35,6 +35,9 @@ var FSHADER_SOURCE =`
   varying vec2 v_UV;
   uniform vec4 u_FragColor;
   uniform sampler2D u_Sampler0;
+  uniform sampler2D u_Sampler1;
+  uniform sampler2D u_Sampler2;
+  uniform sampler2D u_Sampler3;
   uniform int u_whichTexture;
 
   void main() {
@@ -47,7 +50,15 @@ var FSHADER_SOURCE =`
       }else if(u_whichTexture == 0){
         gl_FragColor = texture2D(u_Sampler0, v_UV); //Use Texture 0
       
-      }else{
+      }else if(u_whichTexture == 1){
+        gl_FragColor = texture2D(u_Sampler1, v_UV); //Use Texture 1
+      }else if(u_whichTexture == 2){
+        gl_FragColor = texture2D(u_Sampler2, v_UV); //Use Texture 2
+      }else if(u_whichTexture == 3){
+        gl_FragColor = texture2D(u_Sampler3, v_UV); //Use Texture 3
+      }  else{
+
+      
         gl_FragColor = vec4(1,.2,.2,1);             // Error put redish
       }
   
@@ -62,6 +73,9 @@ let u_FragColor;
 let u_Size;
 let u_ModelMatrix; 
 let u_Sampler0;
+let u_Sampler1;
+let u_Sampler2;
+let u_Sampler3;
 let u_whichTexture;
 let u_GlobalRotateMatrix; // Global rotation matrix
 let u_ViewMatrix; // View matrix
@@ -139,12 +153,30 @@ function connectVariablesToGLSL() {
   }
 
 
-    //Get the storage locaiton of u_Sampler
-    u_Sampler0 = gl.getUniformLocation(gl.program, 'u_Sampler0');
-    if(!u_Sampler0){
-      console.log('Failed to get the storage location of u_Sampler0');
-      return false;
-    }
+  //Get the storage locaiton of u_Sampler
+  u_Sampler0 = gl.getUniformLocation(gl.program, 'u_Sampler0');
+  if(!u_Sampler0){
+    console.log('Failed to get the storage location of u_Sampler0');
+    return false;
+  }
+
+  u_Sampler1 = gl.getUniformLocation(gl.program, 'u_Sampler1');
+  if(!u_Sampler1){
+    console.log('Failed to get the storage location of u_Sampler1');
+    return false;
+  }
+
+  u_Sampler2 = gl.getUniformLocation(gl.program, 'u_Sampler2');
+  if(!u_Sampler2){  
+    console.log('Failed to get the storage location of u_Sampler2');
+    return false;
+  }
+
+  u_Sampler3 = gl.getUniformLocation(gl.program, 'u_Sampler3');
+  if(!u_Sampler3){
+    console.log('Failed to get the storage location of u_Sampler3');
+    return false;
+  }
 
   u_whichTexture = gl.getUniformLocation(gl.program, 'u_whichTexture');
   if(!u_whichTexture){
@@ -159,15 +191,46 @@ function connectVariablesToGLSL() {
 
 function initTextures(){
   var image = new Image(); // Create the image object
+
   if (!image) {
     console.log('Failed to create the image object');
     return false;
   }
 
   image.onload = function(){ sendImageToTEXTURE0(image);};
+
   image.src = 'sky.jpg';
+
   // ADD MORE TEXTURES LATER
-  return true; 
+
+
+  var imageSnow = new Image(); // Create the image object
+  if (!imageSnow) {
+    console.log('Failed to create the image object');
+    return false;
+  }
+  imageSnow.onload = function(){ sendImageToTEXTURE1(imageSnow);};
+  imageSnow.src = 'snow2.jpg';
+
+
+  var imageJP = new Image(); // Create the image object
+  if (!imageJP) {
+    console.log('Failed to create the image object');
+    return false;
+  }
+  imageJP.onload = function(){ sendImageToTEXTURE2(imageJP);};
+  imageJP.src = 'johnpork.jpg';
+
+
+  var snow2 = new Image(); // Create the image object
+  if (!snow2) {
+    console.log('Failed to create the image object');
+    return false;
+  }
+
+  snow2.onload = function(){ sendImageToTEXTURE3(snow2);};
+  snow2.src = 'snow1.jpg';
+
 }
 
 function sendImageToTEXTURE0(image) {
@@ -189,7 +252,43 @@ function sendImageToTEXTURE0(image) {
   console.log('texture loaded');
 
 }
+function sendImageToTEXTURE1(image) {
+  const tex = gl.createTexture();
+  gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1);
+  gl.activeTexture(gl.TEXTURE1);          // use unit 1
+  gl.bindTexture (gl.TEXTURE_2D, tex);
+  gl.texParameterf(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+  gl.texImage2D  (gl.TEXTURE_2D, 0, gl.RGBA,
+                  gl.RGBA, gl.UNSIGNED_BYTE, image);
 
+  gl.uniform1i(u_Sampler1, 1);            // tell the shader “sampler1 = unit 1”
+  console.log('grass texture loaded');
+}
+
+function sendImageToTEXTURE2(image) {
+  const tex = gl.createTexture();
+  gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1);
+  gl.activeTexture(gl.TEXTURE2);          // use unit 1
+  gl.bindTexture (gl.TEXTURE_2D, tex);
+  gl.texParameterf(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+  gl.texImage2D  (gl.TEXTURE_2D, 0, gl.RGBA,
+                  gl.RGBA, gl.UNSIGNED_BYTE, image);
+
+  gl.uniform1i(u_Sampler2, 2);            // tell the shader “sampler1 = unit 1”
+  console.log('jp loaded');
+}
+function sendImageToTEXTURE3(image) {
+  const tex = gl.createTexture();
+  gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1);
+  gl.activeTexture(gl.TEXTURE3);          // use unit 1
+  gl.bindTexture (gl.TEXTURE_2D, tex);
+  gl.texParameterf(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+  gl.texImage2D  (gl.TEXTURE_2D, 0, gl.RGBA,
+                  gl.RGBA, gl.UNSIGNED_BYTE, image);
+
+  gl.uniform1i(u_Sampler3, 3);            // tell the shader “sampler1 = unit 1”
+  console.log('snow2 loaded');
+}
 
 //Constant
 const POINT = 0; // Point type
@@ -449,6 +548,101 @@ var g_eye =[0,0,3]; // The camera position (eye point)
 var g_at  =[0,0,-100]; // The camera looks at the origin (0,0,0)
 var g_up  =[0,1,0]; // The up vector points to positive Y direction
 
+
+var g_map = [
+  [1, 1, 1, 1, 1, 1, 1, 1],
+  [1, 0, 0, 0, 0, 0, 0, 1],
+  [1, 0, 0, 0, 0, 0, 0, 1],
+  [1, 0, 0, 0, 0, 0, 0, 1],
+  [1, 0, 0, 0, 0, 0, 0, 1],
+  [1, 0, 0, 0, 0, 0, 0, 1],
+  [1, 0, 0, 0, 0, 0, 0, 1],
+  [1, 0, 0, 0, 0, 0, 0, 1]
+]
+
+function drawMap(){
+  for(X =0; X<8; X++){
+    for(y = 0; y<8;y++){
+
+      if(g_map[X][y] == 1){
+        var cube = new Cube();
+        cube.color = [0.0, 0.0, 0.0, 1.0]; // Red color
+        cube.textureNum = -1; // Set the texture number to 0
+        cube.matrix.rotate(90, 0, 1, 0);
+        cube.matrix.translate(X-10, -.60, y-4); // Translate the cube to the right
+       // cube.matrix.scale(1, 1, 1); // Rotate the cube by 45 degrees around the z-axis
+        cube.render();
+      }
+    }
+  }
+}
+
+const EXTRA_DROP = -0.5;   // ↓ ½ cube
+const PUSH_Z     = -3;     // move 3 cubes toward –Z (tweak to taste)
+
+// ---------------------------------------------------------------------------
+// Call drawIgloo() from inside renderAllShapes().
+// ---------------------------------------------------------------------------
+function drawIgloo() {
+  /*---------------- user‑tweakable parameters ----------------*/
+  const baseR      = 5;          // ground‑ring radius (cubes)
+  const layers     = 4;          // vertical courses
+  const stepDeg    = 18;         // angular spacing between blocks
+  const doorWidth  = 2;          // doorway blocks (ground course)
+  const doorHeight = 3;          // doorway blocks (vertical)
+  const centreX = 0, centreZ = 0;/* igloo origin */
+
+  /*---- global transform --------------------------------------------------*/
+  const ROT90 = (x, z) => ({ x: -z, z:  x }); // rotate +90° about Y
+
+  const EXTRA_DROP = -1;   // ↓ another ½‑cube
+  const PUSH_Z     = 5;     // slide toward –Z   (tweak to taste)
+
+  const Y_SHIFT = -0.10 + EXTRA_DROP;          // overall vertical offset
+  /*------------------------------------------------------------------------*/
+
+  /* side walls – ring by ring */
+  for (let y = 0; y < layers; ++y) {
+    const r        = baseR - y;                       // taper inward
+    const yPos     = -0.60 + y + Y_SHIFT;             // vertical position
+    const doorSpan = doorWidth * 180 / (Math.PI * r); // width → degrees
+
+    for (let a = 0; a < 360; a += stepDeg) {
+      const centred = ((a + stepDeg / 2) % 360) - 180;      // [-180,180]
+      const inDoor  = (Math.abs(centred) < doorSpan / 2) && (y < doorHeight);
+      if (inDoor) continue;                                 // leave doorway
+
+      const rad     = a * Math.PI / 180;
+      const rawX    = Math.round(r * Math.cos(rad));
+      const rawZ    = Math.round(r * Math.sin(rad));
+      const { x, z} = ROT90(rawX, rawZ);                    // rotate ring
+
+      const cube = new Cube();
+      cube.textureNum = 3;   // snow texture
+      cube.color      = [1, 1, 1, 1];
+      cube.matrix.setTranslate(centreX + x,
+                               yPos,
+                               centreZ + z + PUSH_Z);       // apply PUSH_Z
+      cube.render();
+    }
+  }
+
+  /* roof‑cap – 3 × 3 patch on top */
+  const capY = -0.60 + layers + Y_SHIFT;
+  for (let dx = -1; dx <= 1; ++dx) {
+    for (let dz = -1; dz <= 1; ++dz) {
+      const { x, z } = ROT90(dx, dz);                       // rotate cap
+
+      const cube = new Cube();
+      cube.textureNum = 3;
+      cube.color      = [1, 1, 1, 1];
+      cube.matrix.setTranslate(centreX + x,
+                               capY,
+                               centreZ + z + PUSH_Z);       // apply PUSH_Z
+      cube.render();
+    }
+  }
+}
 //Draw every shape that is supposed to be in the canvas
 function renderAllShapes(){
 
@@ -457,41 +651,51 @@ function renderAllShapes(){
   const gRot = new Matrix4().rotate(g_globalAngle, 0, 1, 0);   // or just new Matrix4()
   gl.uniformMatrix4fv(u_GlobalRotateMatrix, false, gRot.elements);
 
-  //----- old matrices -----
-//Pass the projection matrix to u_ProjectionMatrix attribute
-// var projMat = new Matrix4(); // Create a matrix object
-// projMat.setPerspective(60, canvas.width/canvas.height, .1, 100); // Set the perspective projection matrix
-// gl.uniformMatrix4fv(u_ProjectionMatrix, false, projMat.elements); // Pass the matrix to u_ProjectionMatrix attribute
+  camera.uploadToShader(gl, u_ViewMatrix, u_ProjectionMatrix);
 
-
-// //Pass the view matrix to u_ViewMatrix attribute
-// var viewMat = new Matrix4(); // Create a matrix object
-// viewMat.setLookAt(g_eye[0], g_eye[1], g_eye[2],  // eye position
-//                   g_at[0], g_at[1], g_at[2],  // look at the origin
-//                   g_up[0], g_up[1], g_up[2]); // up vector
-// gl.uniformMatrix4fv(u_ViewMatrix, false, viewMat.elements); // Pass the matrix to u_ViewMatrix attribute
-
-// //Pass the global rotation matrix to u_GlobalRotateMatrix attribute
-// var u_GlobalRotateMat = new Matrix4().rotate(g_globalAngle,0,1,0); // Create a matrix object
-// gl.uniformMatrix4fv(u_GlobalRotateMatrix, false, u_GlobalRotateMat.elements); // Pass the matrix to u_GlobalRotateMatrix attribute
-camera.uploadToShader(gl, u_ViewMatrix, u_ProjectionMatrix);
-
-  // // var u_GlobalRotateMat = new Matrix4().rotate(g_globalAngle,0,1,0); // Create a matrix object
-  // var u_GlobalRotateMat = new Matrix4();
-  // u_GlobalRotateMat.rotate(g_camYaw,   0, 1, 0);   // yaw around Y
-  // u_GlobalRotateMat.rotate(g_camPitch, 1, 0, 0);   // pitch around X
-  // u_GlobalRotateMat.scale(g_zoom, g_zoom, g_zoom); // wheel zoom
-  // gl.uniformMatrix4fv(u_GlobalRotateMatrix, false, u_GlobalRotateMat.elements); // Pass the matrix to u_GlobalRotateMatrix attribute
 
   // Clear <canvas>
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
 
+  //drawMap(); // Draw the map
+
+
+  //eggs
+  const egg1 = new Sphere();
+  egg1.color = [0.741, 0.678, 0.6, 1.0];   // pale‑blue ice ball
+  egg1.radius = 0.8;
+  egg1.latSeg = 20;                     // finer mesh if you like
+  egg1.lonSeg = 40;
+  egg1.matrix.setTranslate(1, -.4, 5);
+  egg1.matrix.scale(0.2, 0.2, 0.2);     // scale to egg shape
+  egg1.render();
+
+  const egg2 = new Sphere();
+  egg2.color = [0.741, 0.678, 0.6, 1.0];   // pale‑blue ice ball
+  egg2.radius = 0.8;
+  egg2.latSeg = 20;                     // finer mesh if you like
+  egg2.lonSeg = 40;
+  egg2.matrix.setTranslate(0.6, -.4, 5);
+  egg2.matrix.scale(0.2, 0.2, 0.2);     // scale to egg shape
+  egg2.render();
+
+
+  drawIgloo();
+  //jp Cube
+  var jp = new Cube();
+  jp.color = [0.0, .5, 0.0, 1.0]; // Red color
+  jp.textureNum = 2; // Set the texture number to 0
+  jp.matrix.setTranslate(.1, -0.6, 6); // Translate the cube to the right
+  jp.matrix.scale(1, 1, 1); // Rotate the cube by 45 degrees around the z-axis
+  
+  jp.render();
+
   //Draw the floor
   var floor = new Cube();
   floor.color = [0.0, .5, 0.0, 1.0]; // Red color
-  floor.textureNum = -2; // Set the texture number to 0
-  floor.matrix.setTranslate(0, -0.75, 0); // Translate the cube to the right
+  floor.textureNum = 1; // Set the texture number to 0
+  floor.matrix.setTranslate(0, -0.60, 0); // Translate the cube to the right
   floor.matrix.scale(32, 0, 32); // Rotate the cube by 45 degrees around the z-axis
   floor.matrix.translate(-.5, 0, -.5); // Rotate the cube by 45 degrees around the z-axis
   floor.render();
@@ -504,312 +708,518 @@ camera.uploadToShader(gl, u_ViewMatrix, u_ProjectionMatrix);
   sky.matrix.translate(-.5, -.5, -0.5); // Translate the cube to the right
   sky.render();
 
-  //Head
-  var head = new Cube();
-  head.color = [0.0, 0.0, 0.0, 1.0]; // Red color
-  head.matrix.setTranslate(-0.19, .5, .05);
-  head.matrix.translate(0.2, 0, 0.2);           // ½ width, ½ depth (move origin to centre)
-  head.matrix.rotate(g_globalHeadAngle, 0, 1, 0); // yaw at neck centre
-  var headFrame = new Matrix4(head.matrix);
-  head.matrix.translate(-0.2, 0, -0.2);         // move origin back to corner
+
+
+
+
+
+
+
+
+
+
+
+
+
+//   //Head
+//   var head = new Cube();
+//   head.color = [0.0, 0.0, 0.0, 1.0]; // Red color
+//   head.textureNum = -2; // Set the texture number to 0
+//   head.matrix.setTranslate(-0.19, .5, .05);
+//   head.matrix.translate(0.2, 0, 0.2);           // ½ width, ½ depth (move origin to centre)
+//   head.matrix.rotate(g_globalHeadAngle, 0, 1, 0); // yaw at neck centre
+//   var headFrame = new Matrix4(head.matrix);
+//   head.matrix.translate(-0.2, 0, -0.2);         // move origin back to corner
   
-  head.matrix.scale(0.4, 0.35, 0.4);
-  head.render();
+//   head.matrix.scale(0.4, 0.35, 0.4);
+//   head.render();
 
-  //beak upper part
-  var beakUpper = new Cube();
-  beakUpper.color = [1.0, 0.5, 0.0, 1.0]; // Orange color
-  beakUpper.matrix = new Matrix4(headFrame);
-  beakUpper.matrix.translate(-0.07, .08, -.3);
-  beakUpper.matrix.scale(0.14, 0.045,0.2);
-  beakUpper.render();
-
-
-  //TONUGE
-  var beakUpper = new Cube();
-  beakUpper.color = [1.0, 0, 0.0, 1.0]; // Orange color
-  beakUpper.matrix = new Matrix4(headFrame);
-  beakUpper.matrix.translate(-0.06, .06, -.25);
-  beakUpper.matrix.scale(0.11, 0.045,0.2);
-  beakUpper.render();
-
-  //beak lower part
-  var beakLower = new Cube();
-  beakLower.color = [1.0, 0.5, 0.0, .97]; // Orange color
-  beakLower.matrix = new Matrix4(headFrame);
-  beakLower.matrix.translate(-0.07, g_beakLowerY, -.3);
-  beakLower.matrix.scale(0.14, 0.045, 0.2);
-  beakLower.render();
-
-  //left eye
-  var leftEye = new Cube();
-  leftEye.color = [1.0, 1.0, 1.0, 1.0]; // white color
-  leftEye.matrix = new Matrix4(headFrame);
-  leftEye.matrix.translate(-0.13, .2, -.22);
-  var leftEyeFrame = new Matrix4(leftEye.matrix);
-  leftEye.matrix.scale(0.1, 0.1, 0.1);
-  leftEye.render();
-
-  //pupil left eye
-  var leftEyePupil = new Cube();
-  leftEyePupil.color = [0.0, 0.0, 0.0, 1.0]; // black color
-  leftEyePupil.matrix = leftEyeFrame;
-  leftEyePupil.matrix.translate(.02, .02, -.0011);
-  leftEyePupil.matrix.scale(0.05, 0.06, 0.1);
-  leftEyePupil.render();
-
-  //right eye
-  var rightEye = new Cube();
-  rightEye.color = [1.0, 1.0, 1.0, 1.0]; // white color
-  rightEye.matrix = new Matrix4(headFrame);
-  rightEye.matrix.translate(.04, .2, -.22);
-  var rightEyeFrame = new Matrix4(rightEye.matrix);
-  rightEye.matrix.scale(0.1, 0.1, 0.1);
-  rightEye.render();
-
-  //pupil right eye
-  var rightPupil = new Cube();
-  rightPupil.color = [0.0, 0.0, 0.0, 1.0]; // black color
-  rightPupil.matrix = rightEyeFrame;
-  rightPupil.matrix.translate(.02, .02, -.0011);
-  rightPupil.matrix.scale(0.05, 0.06, 0.1);
-  rightPupil.render();
+//   //beak upper part
+//   var beakUpper = new Cube();
+//   beakUpper.color = [1.0, 0.5, 0.0, 1.0]; // Orange color
+//   beakUpper.textureNum = -2; 
+//   beakUpper.matrix = new Matrix4(headFrame);
+//   beakUpper.matrix.translate(-0.07, .08, -.3);
+//   beakUpper.matrix.scale(0.14, 0.045,0.2);
+//   beakUpper.render();
 
 
-  //draw  cube
-  var body = new Cube();
-  body.color = [0.0, 0.0, 0.0, 1.0]; 
-  body.textureNum = -1; // Set the texture number to 0
-  body.matrix.setTranslate(-0.25, -0.5, 0.0); // Translate the cube to the right
-  body.matrix.scale(0.5, 1, .5); // Rotate the cube by 45 degrees around the z-axis
-  body.render();
+//   //TONUGE
+//   var beakUpper = new Cube();
+//   beakUpper.color = [1.0, 0, 0.0, 1.0]; // Orange color
+//   beakUpper.textureNum = -2;
+//   beakUpper.matrix = new Matrix4(headFrame);
+//   beakUpper.matrix.translate(-0.06, .06, -.25);
+//   beakUpper.matrix.scale(0.11, 0.045,0.2);
+//   beakUpper.render();
 
-//white part of the body
-  var whiteBelly = new Cube();
-  whiteBelly.color = [1.0, 1.0, 1.0, 1.0]; // Red color
-  whiteBelly.matrix.setTranslate(-0.16, -0.44, -.01); // Translate the cube to the right
-  //front.matrix.scale(0.5, 1, .5); // Rotate the cube by 45 degrees around the z-axis
-  whiteBelly.matrix.scale(0.33, 0.9, 0.5);
-  whiteBelly.render();
+//   //beak lower part
+//   var beakLower = new Cube();
+//   beakLower.color = [1.0, 0.5, 0.0, .97]; // Orange color
+//   beakLower.textureNum = -2; // Set the texture number to 0
+//   beakLower.matrix = new Matrix4(headFrame);
+//   beakLower.matrix.translate(-0.07, g_beakLowerY, -.3);
+//   beakLower.matrix.scale(0.14, 0.045, 0.2);
+//   beakLower.render();
 
-  //yellow part of the body
-  var yellowPart = new Cube();
-  yellowPart.color = [1.0, 1.0, 0.8, 1.0]; // Red color
-  yellowPart.matrix.setTranslate(-0.16, .301, -.011); // Translate the cube to the right
-  yellowPart.matrix.scale(0.33, 0.2, 0.5);
-  yellowPart.render();
+//   //left eye
+//   var leftEye = new Cube();
+//   leftEye.color = [1.0, 1.0, 1.0, 1.0]; // white color
+//   leftEye.textureNum = -2; // Set the texture number to 0
+//   leftEye.matrix = new Matrix4(headFrame);
+//   leftEye.matrix.translate(-0.13, .2, -.22);
+//   var leftEyeFrame = new Matrix4(leftEye.matrix);
+//   leftEye.matrix.scale(0.1, 0.1, 0.1);
+//   leftEye.render();
 
-  // constants so it’s easy to tweak
-  const ARM_LEN   = 0.30;   // final height
-  const ARM_THICK = 0.09;   // final width
-  const t = g_seconds;           // or however you update time
-  const armAngle = -80 * Math.abs(Math.sin(t));
-  // ------------- LEFT WING, pivot at the shoulder -------------
-  var leftArm = new Cube();
-  leftArm.color = [0, 0, 0, 1];
-  leftArm.matrix.setTranslate(.25, .45, .5);
-  leftArm.matrix.rotate(180, 180, 0, 1);          // flip so it points left
+//   //pupil left eye
+//   var leftEyePupil = new Cube();
+//   leftEyePupil.color = [0.0, 0.0, 0.0, 1.0]; // black color
+//   leftEyePupil.textureNum = -2; // Set the texture number to 0
+//   leftEyePupil.matrix = leftEyeFrame;
+//   leftEyePupil.matrix.translate(.02, .02, -.0011);
+//   leftEyePupil.matrix.scale(0.05, 0.06, 0.1);
+//   leftEyePupil.render();
 
-  leftArm.matrix.rotate(-g_globalArmAngle, 0, 0, 1);
-  // if(g_armAnimation){
-  //   leftArm.matrix.rotate(armAngle,0,0,1);
-  // }else{
-  //   leftArm.matrix.rotate(-g_globalArmAngle, 0, 0, 1);
-  // }
+//   //right eye
+//   var rightEye = new Cube();
+//   rightEye.color = [1.0, 1.0, 1.0, 1.0]; // white color
+//   rightEye.textureNum = -2; // Set the texture number to 0
+//   rightEye.matrix = new Matrix4(headFrame);
+//   rightEye.matrix.translate(.04, .2, -.22);
+//   var rightEyeFrame = new Matrix4(rightEye.matrix);
+//   rightEye.matrix.scale(0.1, 0.1, 0.1);
+//   rightEye.render();
 
-  // *** copy the matrix NOW (before we scale!) ***
-  var elbowFrame = new Matrix4(leftArm.matrix);
+//   //pupil right eye
+//   var rightPupil = new Cube();
+//   rightPupil.color = [0.0, 0.0, 0.0, 1.0]; // black color
+//   rightPupil.textureNum = -2; // Set the texture number to 0
+//   rightPupil.matrix = rightEyeFrame;
+//   rightPupil.matrix.translate(.02, .02, -.0011);
+//   rightPupil.matrix.scale(0.05, 0.06, 0.1);
+//   rightPupil.render();
 
-  leftArm.matrix.scale(ARM_THICK, ARM_LEN, 0.5);
-  leftArm.render();
 
-  //white under arm
-  var wleftArm = new Cube();
-  wleftArm.color = [1, 1, 1, 1];
-  wleftArm.matrix.setTranslate(.24, .45, .4);
-  wleftArm.matrix.rotate(180, 180, 0, 1);          // flip so it points left
+//   //draw  cube
+//   var body = new Cube();
+//   body.color = [0.0, 0.0, 0.0, 1.0]; 
+//   body.textureNum = -2; // Set the texture number to 0
+//   body.matrix.setTranslate(-0.25, -0.5, 0.0); // Translate the cube to the right
+//   body.matrix.scale(0.5, 1, .5); // Rotate the cube by 45 degrees around the z-axis
+//   body.render();
 
-  wleftArm.matrix.rotate(-g_globalArmAngle, 0, 0, 1);
+// //white part of the body
+//   var whiteBelly = new Cube();
+//   whiteBelly.color = [1.0, 1.0, 1.0, 1.0]; // white color
+//   whiteBelly.textureNum = -2; // Set the texture number to 0
+//   whiteBelly.matrix.setTranslate(-0.16, -0.44, -.01); // Translate the cube to the right
+//   //front.matrix.scale(0.5, 1, .5); // Rotate the cube by 45 degrees around the z-axis
+//   whiteBelly.matrix.scale(0.33, 0.9, 0.5);
+//   whiteBelly.render();
 
-  // *** copy the matrix NOW (before we scale!) ***
-  wleftArm.matrix.scale(.09, ARM_LEN, 0.25);
-  wleftArm.render();
+//   //yellow part of the body
+//   var yellowPart = new Cube();
+//   yellowPart.color = [1.0, 1.0, 0.8, 1.0]; // yellow color
+//   yellowPart.textureNum = -2; // Set the texture number to 0
+//   yellowPart.matrix.setTranslate(-0.16, .301, -.011); // Translate the cube to the right
+//   yellowPart.matrix.scale(0.33, 0.2, 0.5);
+//   yellowPart.render();
 
-  // ── LOWER ARM ──────────────────────────────────────────────
-  var lowLeftArm = new Cube();
-  lowLeftArm.color = [0, 0, 0, 1];               // use black later
-  lowLeftArm.matrix = new Matrix4(elbowFrame);   // start at the shoulder
+//   // constants so it’s easy to tweak
+//   const ARM_LEN   = 0.30;   // final height
+//   const ARM_THICK = 0.09;   // final width
+//   const t = g_seconds;           // or however you update time
+//   const armAngle = -80 * Math.abs(Math.sin(t));
+//   // ------------- LEFT WING, pivot at the shoulder -------------
+//   var leftArm = new Cube();
+//   leftArm.color = [0, 0, 0, 1];
+//   leftArm.textureNum = -2; 
+//   leftArm.matrix.setTranslate(.25, .45, .5);
+//   leftArm.matrix.rotate(180, 180, 0, 1);          // flip so it points left
 
-  //put the cube’s **top-centre** at the elbow
-  lowLeftArm.matrix.translate( ARM_THICK * 0.5, ARM_LEN, 0 );
+//   leftArm.matrix.rotate(-g_globalArmAngle, 0, 0, 1);
+//   // if(g_armAnimation){
+//   //   leftArm.matrix.rotate(armAngle,0,0,1);
+//   // }else{
+//   //   leftArm.matrix.rotate(-g_globalArmAngle, 0, 0, 1);
+//   // }
 
-  // rotate around that top-centre
-  lowLeftArm.matrix.rotate( g_lowerArmAngle, 0, 0, 1 );
+//   // *** copy the matrix NOW (before we scale!) ***
+//   var elbowFrame = new Matrix4(leftArm.matrix);
 
-  // move the origin back to the corner
-  lowLeftArm.matrix.translate( -ARM_THICK * 0.5, 0, 0 );
+//   leftArm.matrix.scale(ARM_THICK, ARM_LEN, 0.5);
+//   leftArm.render();
 
-  //stretch the cube into a fore-arm
-  lowLeftArm.matrix.scale( ARM_THICK, ARM_LEN, 0.5 );
+//   //white under arm
+//   var wleftArm = new Cube();
+//   wleftArm.color = [1, 1, 1, 1];
+//   wleftArm.textureNum = -2;
+//   wleftArm.matrix.setTranslate(.24, .45, .4);
+//   wleftArm.matrix.rotate(180, 180, 0, 1);          // flip so it points left
 
-  lowLeftArm.render();  
+//   wleftArm.matrix.rotate(-g_globalArmAngle, 0, 0, 1);
+
+//   // *** copy the matrix NOW (before we scale!) ***
+//   wleftArm.matrix.scale(.09, ARM_LEN, 0.25);
+//   wleftArm.render();
+
+//   // ── LOWER ARM ──────────────────────────────────────────────
+//   var lowLeftArm = new Cube();
+//   lowLeftArm.color = [0, 0, 0, 1];               // use black later
+//   lowLeftArm.textureNum = -2;               // use black later
+//   lowLeftArm.matrix = new Matrix4(elbowFrame);   // start at the shoulder
+
+//   //put the cube’s **top-centre** at the elbow
+//   lowLeftArm.matrix.translate( ARM_THICK * 0.5, ARM_LEN, 0 );
+
+//   // rotate around that top-centre
+//   lowLeftArm.matrix.rotate( g_lowerArmAngle, 0, 0, 1 );
+
+//   // move the origin back to the corner
+//   lowLeftArm.matrix.translate( -ARM_THICK * 0.5, 0, 0 );
+
+//   //stretch the cube into a fore-arm
+//   lowLeftArm.matrix.scale( ARM_THICK, ARM_LEN, 0.5 );
+
+//   lowLeftArm.render();  
    
-  var wlowLeftArm = new Cube();
-  wlowLeftArm.color = [1, 1, 1, 1];               // use black later
-  wlowLeftArm.matrix = new Matrix4(elbowFrame);   // start at the shoulder
+//   var wlowLeftArm = new Cube();
+//   wlowLeftArm.color = [1, 1, 1, 1];               // use black later
+//   wlowLeftArm.textureNum = -2;               // use black later
+//   wlowLeftArm.matrix = new Matrix4(elbowFrame);   // start at the shoulder
 
-  //put the cube’s **top-centre** at the elbow
-  wlowLeftArm.matrix.translate( ARM_THICK * 0.5, ARM_LEN, 0 );
+//   //put the cube’s **top-centre** at the elbow
+//   wlowLeftArm.matrix.translate( ARM_THICK * 0.5, ARM_LEN, 0 );
 
-  // rotate around that top-centre
-  wlowLeftArm.matrix.rotate( g_lowerArmAngle, 0, 0, 1 );
+//   // rotate around that top-centre
+//   wlowLeftArm.matrix.rotate( g_lowerArmAngle, 0, 0, 1 );
 
-  // move the origin back to the corner
-  wlowLeftArm.matrix.translate( -ARM_THICK * 0.5, 0, 0 );
+//   // move the origin back to the corner
+//   wlowLeftArm.matrix.translate( -ARM_THICK * 0.5, 0, 0 );
 
-  //stretch the cube into a fore-arm
-  wlowLeftArm.matrix.scale( ARM_THICK, ARM_LEN, 0.15 );
-  wlowLeftArm.matrix.translate(-.1, -.02, 1.0);
+//   //stretch the cube into a fore-arm
+//   wlowLeftArm.matrix.scale( ARM_THICK, ARM_LEN, 0.15 );
+//   wlowLeftArm.matrix.translate(-.1, -.02, 1.0);
 
-  wlowLeftArm.render();   
-
-
-  //right arm
-  var rightArm = new Cube();
-  rightArm.color = [0.0, 0.0, 0.0, 1.0]; // Same black color
-  rightArm.matrix.setTranslate( -0.25, .45, 0);
-  rightArm.matrix.rotate(180, 0, 0, 1);
+//   wlowLeftArm.render();   
 
 
-  rightArm.matrix.rotate(-g_globalArmAngle, 0, 0, 1);
+//   //right arm
+//   var rightArm = new Cube();
+//   rightArm.color = [0.0, 0.0, 0.0, 1.0]; // Same black color
+//   rightArm.textureNum = -2; 
+//   rightArm.matrix.setTranslate( -0.25, .45, 0);
+//   rightArm.matrix.rotate(180, 0, 0, 1);
+
+
+//   rightArm.matrix.rotate(-g_globalArmAngle, 0, 0, 1);
   
   
-  var rightElbowFrame = new Matrix4(rightArm.matrix);
-  rightArm.matrix.scale(ARM_THICK,  ARM_LEN, 0.5); // Same scale
-  rightArm.render();
+//   var rightElbowFrame = new Matrix4(rightArm.matrix);
+//   rightArm.matrix.scale(ARM_THICK,  ARM_LEN, 0.5); // Same scale
+//   rightArm.render();
 
 
-  //white upper arm
-  var wRightArm = new Cube();
-  wRightArm.color = [1.0, 1.0, 1.0, 1.0]; // Same black color
-  wRightArm.matrix.setTranslate( -.24, .45, .15);
-  wRightArm.matrix.rotate(180, 0, 0, 1);
+//   //white upper arm
+//   var wRightArm = new Cube();
+//   wRightArm.color = [1.0, 1.0, 1.0, 1.0]; // Same black color
+//   wRightArm.textureNum = -2;
+//   wRightArm.matrix.setTranslate( -.24, .45, .15);
+//   wRightArm.matrix.rotate(180, 0, 0, 1);
 
 
-  wRightArm.matrix.rotate(-g_globalArmAngle, 0, 0, 1);
+//   wRightArm.matrix.rotate(-g_globalArmAngle, 0, 0, 1);
   
-  wRightArm.matrix.scale(.09, ARM_LEN, 0.25); // Same scale
-  wRightArm.render();
+//   wRightArm.matrix.scale(.09, ARM_LEN, 0.25); // Same scale
+//   wRightArm.render();
 
-  //lower right arm
-  var lowRightArm = new Cube();
-  lowRightArm.color = [0.0, 0.0, 0.0, 1.0]; // Same black color
-  lowRightArm.matrix = new Matrix4(rightElbowFrame); // start at the shoulder
+//   //lower right arm
+//   var lowRightArm = new Cube();
+//   lowRightArm.color = [0.0, 0.0, 0.0, 1.0]; // Same black color
+//   lowRightArm.textureNum = -2; 
+//   lowRightArm.matrix = new Matrix4(rightElbowFrame); // start at the shoulder
 
-  //put the cube’s **top-centre** at the elbow
-  lowRightArm.matrix.translate( ARM_THICK * 0.5, ARM_LEN, 0 );
+//   //put the cube’s **top-centre** at the elbow
+//   lowRightArm.matrix.translate( ARM_THICK * 0.5, ARM_LEN, 0 );
 
-  // rotate around that top-centre
-  lowRightArm.matrix.rotate(g_lowerArmAngle, 0, 0, 1 );
+//   // rotate around that top-centre
+//   lowRightArm.matrix.rotate(g_lowerArmAngle, 0, 0, 1 );
 
-  // move the origin back to the corner
-  lowRightArm.matrix.translate( -ARM_THICK * 0.5, 0, 0 );
+//   // move the origin back to the corner
+//   lowRightArm.matrix.translate( -ARM_THICK * 0.5, 0, 0 );
 
-  //stretch the cube into a fore-arm
-  lowRightArm.matrix.scale( ARM_THICK, ARM_LEN, 0.5 );
-  lowRightArm.render();
+//   //stretch the cube into a fore-arm
+//   lowRightArm.matrix.scale( ARM_THICK, ARM_LEN, 0.5 );
+//   lowRightArm.render();
 
-//white lower right arm
-  //lower right arm
-  var wLowRightArm = new Cube();
-  wLowRightArm.color = [1.0, 1.0, 1.0, 1.0]; // Same black color
-  wLowRightArm.matrix = new Matrix4(rightElbowFrame); // start at the shoulder
+// //white lower right arm
+//   //lower right arm
+//   var wLowRightArm = new Cube();
+//   wLowRightArm.color = [1.0, 1.0, 1.0, 1.0]; // Same black color
+//   wLowRightArm.textureNum = -2;
+//   wLowRightArm.matrix = new Matrix4(rightElbowFrame); // start at the shoulder
 
-  //put the cube’s **top-centre** at the elbow
-  wLowRightArm.matrix.translate( ARM_THICK * 0.5, ARM_LEN, 0 );
+//   //put the cube’s **top-centre** at the elbow
+//   wLowRightArm.matrix.translate( ARM_THICK * 0.5, ARM_LEN, 0 );
 
-  // rotate around that top-centre
-  wLowRightArm.matrix.rotate(g_lowerArmAngle, 0, 0, 1 );
+//   // rotate around that top-centre
+//   wLowRightArm.matrix.rotate(g_lowerArmAngle, 0, 0, 1 );
 
-  // move the origin back to the corner
-  wLowRightArm.matrix.translate( -ARM_THICK * 0.5, 0, 0 );
+//   // move the origin back to the corner
+//   wLowRightArm.matrix.translate( -ARM_THICK * 0.5, 0, 0 );
 
-  //stretch the cube into a fore-arm
-  wLowRightArm.matrix.scale( ARM_THICK, ARM_LEN, 0.15 );
-  wLowRightArm.matrix.translate(-.1, -.03, 1.2);
-  wLowRightArm.render();
-
-
-
-  //right foot
-  var rightFoot = new Cube();
-  rightFoot.color = [1.0, 0.5, 0.0, 1.0]; // Orange color
-  rightFoot.matrix.setTranslate(.03, -.57, -.08);
-  rightFoot.matrix.rotate(5, 0, 1, 0 );
-  rightFoot.matrix.translate(0, 0,  g_legStride);
-  rightFoot.matrix.scale(0.14, 0.07, 0.5);
-  rightFoot.render();
+//   //stretch the cube into a fore-arm
+//   wLowRightArm.matrix.scale( ARM_THICK, ARM_LEN, 0.15 );
+//   wLowRightArm.matrix.translate(-.1, -.03, 1.2);
+//   wLowRightArm.render();
 
 
-  //left foot
-    var leftFoot = new Cube();
-    leftFoot.color = [1.0, 0.5, 0.0, 1.0]; // Orange color
-    leftFoot.matrix.setTranslate(-.18, -.57, -.08);
-    leftFoot.matrix.rotate(-5, 0, 1, 0 );
-    leftFoot.matrix.translate(0, 0, -g_legStride); 
-    leftFoot.matrix.scale(0.14, 0.07, 0.5);
-    leftFoot.render();
+
+//   //right foot
+//   var rightFoot = new Cube();
+//   rightFoot.color = [1.0, 0.5, 0.0, 1.0]; // Orange color
+//   rightFoot.textureNum = -2; 
+//   rightFoot.matrix.setTranslate(.03, -.57, -.08);
+//   rightFoot.matrix.rotate(5, 0, 1, 0 );
+//   rightFoot.matrix.translate(0, 0,  g_legStride);
+//   rightFoot.matrix.scale(0.14, 0.07, 0.5);
+//   rightFoot.render();
 
 
-    //Left Shoulder
-    const leftShoulder = new Cylinder();
-    leftShoulder.color  = [0, 0, 0, 1];
-    leftShoulder.matrix.setTranslate(-0.28, .478, -0.01);
-    leftShoulder.matrix.rotate(90, 1, 0, 0 );
-    leftShoulder.matrix.scale(0.13, .5, 0.13);   // stretch height & radius
-    leftShoulder.render();
+//   //left foot
+//     var leftFoot = new Cube();
+//     leftFoot.color = [1.0, 0.5, 0.0, 1.0]; // Orange color
+//     leftFoot.textureNum = -2;
+//     leftFoot.matrix.setTranslate(-.18, -.57, -.08);
+//     leftFoot.matrix.rotate(-5, 0, 1, 0 );
+//     leftFoot.matrix.translate(0, 0, -g_legStride); 
+//     leftFoot.matrix.scale(0.14, 0.07, 0.5);
+//     leftFoot.render();
 
-    //right Shoulder
-    const rightShoulder = new Cylinder();
-    rightShoulder.color  = [0, 0, 0, 1];
-    rightShoulder.matrix.setTranslate(0.28, .478, -0.01);
-    rightShoulder.matrix.rotate(90, 1, 0, 0 );
-    rightShoulder.matrix.scale(0.13, .5, 0.13);   // stretch height & radius
-    rightShoulder.render();
 
-    //left elbow  cylinder
-    const leftElbow = new Cylinder();
-    leftElbow.color  = [0, 0, 0, 1];
-    leftElbow.matrix = new Matrix4(elbowFrame); // start at the shoulder
-    // 2. move origin to the elbow (top-centre of upper arm)
-    leftElbow.matrix.translate(ARM_THICK * 0.5, ARM_LEN, 0);
+//     //Left Shoulder
+//     const leftShoulder = new Cylinder();
+//     leftShoulder.color  = [0, 0, 0, 1];
+//     leftShoulder.textureNum = -2; 
+//     leftShoulder.matrix.setTranslate(-0.28, .478, -0.01);
+//     leftShoulder.matrix.rotate(90, 1, 0, 0 );
+//     leftShoulder.matrix.scale(0.13, .5, 0.13);   // stretch height & radius
+//     leftShoulder.render();
 
-    // 3. follow the fore-arm rotation so the disc stays between the two parts
-    leftElbow.matrix.rotate(g_lowerArmAngle, 0, 0, 1);
+//     //right Shoulder
+//     const rightShoulder = new Cylinder();
+//     rightShoulder.color  = [0, 0, 0, 1];
+//     rightShoulder.textureNum = -2;
+//     rightShoulder.matrix.setTranslate(0.28, .478, -0.01);
+//     rightShoulder.matrix.rotate(90, 1, 0, 0 );
+//     rightShoulder.matrix.scale(0.13, .5, 0.13);   // stretch height & radius
+//     rightShoulder.render();
 
-    // 4. turn cylinder sideways → disc
-    leftElbow.matrix.rotate(90, 1, 0, 0);
+//     //left elbow  cylinder
+//     const leftElbow = new Cylinder();
+//     leftElbow.color  = [0, 0, 0, 1];
+//     leftElbow.textureNum = -2;
+//     leftElbow.matrix = new Matrix4(elbowFrame); // start at the shoulder
+//     // 2. move origin to the elbow (top-centre of upper arm)
+//     leftElbow.matrix.translate(ARM_THICK * 0.5, ARM_LEN, 0);
 
-    // 5. make it small and thin  (radius ≈ ARM_THICK, height very small)
-    leftElbow.matrix.scale(.1, .51, .1);
-        leftElbow.render();
+//     // 3. follow the fore-arm rotation so the disc stays between the two parts
+//     leftElbow.matrix.rotate(g_lowerArmAngle, 0, 0, 1);
 
-    //right elbow  cylinder
-    const rightElbow = new Cylinder();
-    rightElbow.color  = [0, 0, 0, 1];
-    rightElbow.matrix = new Matrix4(rightElbowFrame); // start at the shoulder
-    rightElbow.matrix.translate(ARM_THICK * 0.5, ARM_LEN, 0);
-    rightElbow.matrix.rotate(g_lowerArmAngle, 0, 0, 1); // rotate around that top-centre
-    // 4. turn cylinder sideways → disc
-    rightElbow.matrix.rotate(90, 1, 0, 0);
+//     // 4. turn cylinder sideways → disc
+//     leftElbow.matrix.rotate(90, 1, 0, 0);
 
-    // 5. make it small and thin  (radius ≈ ARM_THICK, height very small)
-    rightElbow.matrix.scale(.1, .50, .1);
+//     // 5. make it small and thin  (radius ≈ ARM_THICK, height very small)
+//     leftElbow.matrix.scale(.1, .51, .1);
+//         leftElbow.render();
 
-    rightElbow.render();
+//     //right elbow  cylinder
+//     const rightElbow = new Cylinder();
+//     rightElbow.color  = [0, 0, 0, 1];
+//     rightElbow.textureNum = -2;
+//     rightElbow.matrix = new Matrix4(rightElbowFrame); // start at the shoulder
+//     rightElbow.matrix.translate(ARM_THICK * 0.5, ARM_LEN, 0);
+//     rightElbow.matrix.rotate(g_lowerArmAngle, 0, 0, 1); // rotate around that top-centre
+//     // 4. turn cylinder sideways → disc
+//     rightElbow.matrix.rotate(90, 1, 0, 0);
+
+//     // 5. make it small and thin  (radius ≈ ARM_THICK, height very small)
+//     rightElbow.matrix.scale(.1, .50, .1);
+
+//     rightElbow.render();
+
+drawPenguin(0, 0, 0);           // origin penguin
+drawPenguin(2, 0, -6,{         // custom animation for this guy
+  headAngle: 0,
+  wingAngle: 0,
+  lowerWingAngle: 0,
+  yaw: 360,
+  stride: 0          // standing still
+});          
 
   
+
+drawPenguin(-1, 0, 1, {         // custom animation for this guy
+  headAngle: 0,
+  wingAngle: 45,
+  lowerWingAngle: -20,
+  yaw: 0,
+  stride: 0          // standing still
+});
   var duration = performance.now() - startTime; // End time
   //console.log("Render time: " + duration + " ms"); // Log the render time
 
+}
+
+function drawPenguin(px, py, pz, opts = {}) {
+  const yaw            = opts.yaw            ?? 0;   // <‑‑ NEW
+  const headAngle      = opts.headAngle      ?? g_globalHeadAngle;
+  const wingAngle      = opts.wingAngle      ?? g_globalArmAngle;
+  const lowerWingAngle = opts.lowerWingAngle ?? g_lowerArmAngle;
+  const legStride      = opts.stride         ?? g_legStride;
+  const t              = g_seconds;
+
+  /* ---------- root transform ---------- *
+   * 1) rotate the whole bird at the origin
+   * 2) move it out to its world position
+   * This keeps the turn centred on the penguin itself.
+   */
+  const root = new Matrix4();
+  root.rotate(yaw, 0, 1, 0);    // spin around Y
+  root.translate(px, py, pz);
+
+  // ────────── HEAD ──────────
+  const headBase = new Matrix4(root);        // start from penguin root
+  headBase.translate(-0.19, .5, .05);        // neck corner
+  headBase.translate(0.2, 0, 0.2);           // move pivot to neck centre
+  headBase.rotate(headAngle, 0, 1, 0);       // yaw
+  
+  const headFrame = new Matrix4(headBase);   // <-- SAVE HERE (un‑scaled!)
+  
+  // draw the actual cube
+  const head = new Cube();
+  head.color=[0,0,0,1]; head.textureNum=-2;
+  head.matrix = new Matrix4(headBase);
+  head.matrix.translate(-0.2, 0, -0.2);      // move pivot back to corner
+  head.matrix.scale(0.4, 0.35, 0.4);         // scale only the cube
+  head.render();
+  // Save frame at the neck centre for eyes / beak
+  //const headFrame = new Matrix4(head.matrix);
+
+  // ─── BEAK upper / tongue / lower ───
+  const makeBeakPiece = (color, tx, ty, tz, sx, sy, sz) => {
+    const c = new Cube();
+    c.color = color; c.textureNum = -2;
+    c.matrix = new Matrix4(headFrame);
+    c.matrix.translate(tx, ty, tz).scale(sx, sy, sz);
+    c.render();
+  };
+  makeBeakPiece([1,0.5,0,1], -0.07, .08, -.3,  0.14, 0.045, 0.2); // upper
+  makeBeakPiece([1,0,0,1],   -0.06, .06, -.25, 0.11, 0.045, 0.2); // tongue
+  makeBeakPiece([1,0.5,0,.97],-0.07,g_beakLowerY,-.3,0.14,0.045,0.2);// lower
+
+  // ─── EYES ───
+  const makeEye = (baseTx) => {
+    const sclera = new Cube();
+    sclera.color=[1,1,1,1]; sclera.textureNum=-2;
+    sclera.matrix = new Matrix4(headFrame);
+    sclera.matrix.translate(baseTx, .2, -.22).scale(0.1,0.1,0.1);
+    sclera.render();
+
+    const pupil = new Cube();
+    pupil.color=[0,0,0,1]; pupil.textureNum=-2;
+    pupil.matrix = new Matrix4(sclera.matrix);
+    pupil.matrix.translate(.02,.02,-.0011).scale(0.5,0.6,1);
+    pupil.render();
+  };
+  makeEye(-0.13); // left
+  makeEye( 0.04); // right
+
+  // ────────── BODY & BELLY ──────────
+  const body = new Cube();
+  body.color=[0,0,0,1]; body.textureNum=-2;
+  body.matrix = new Matrix4(root);
+  body.matrix.translate(-0.25,-0.5,0).scale(0.5,1,0.5);
+  body.render();
+
+  const belly = new Cube();
+  belly.color=[1,1,1,1]; belly.textureNum=-2;
+  belly.matrix = new Matrix4(root);
+  belly.matrix.translate(-0.16,-0.44,-.01).scale(0.33,0.9,0.5);
+  belly.render();
+
+  const chestYellow = new Cube();
+  chestYellow.color=[1,1,0.8,1]; chestYellow.textureNum=-2;
+  chestYellow.matrix = new Matrix4(root);
+  chestYellow.matrix.translate(-0.16, .301,-.011).scale(0.33,0.2,0.5);
+  chestYellow.render();
+
+  // Constants
+  const ARM_LEN=0.30, ARM_THICK=0.09;
+  const flap = -80*Math.abs(Math.sin(t)); // idle flap demo
+
+  // Shared helper to build a full wing (upper + lower) -------------
+  function buildWing(isLeft) {
+    const sign = isLeft ? 1 : -1;
+    // Upper
+    const upper = new Cube();
+    upper.color=[0,0,0,1]; upper.textureNum=-2;
+    upper.matrix = new Matrix4(root);
+    upper.matrix.translate(sign*0.25, .45, isLeft? .5 : 0)
+                .rotate(180, isLeft?180:0,0,1)
+                .rotate(-wingAngle,0,0,1)
+                .scale(ARM_THICK,ARM_LEN,0.5);
+    upper.render();
+
+    // White underside
+    const wUpper = new Cube();
+    wUpper.color=[1,1,1,1]; wUpper.textureNum=-2;
+    wUpper.matrix = new Matrix4(root);
+    wUpper.matrix.translate(sign*0.24,.45,isLeft?.4:.15)
+                .rotate(180, isLeft?180:0,0,1)
+                .rotate(-wingAngle,0,0,1)
+                .scale(.09,ARM_LEN,0.25);
+    wUpper.render();
+
+    // ---------- lower wing ------------
+    const elbowFrame = new Matrix4(root);
+    elbowFrame.translate(sign*0.25,.45,isLeft?.5:0)
+               .rotate(180,isLeft?180:0,0,1)
+               .rotate(-wingAngle,0,0,1);
+
+    const lower = new Cube();
+    lower.color=[0,0,0,1]; lower.textureNum=-2;
+    lower.matrix = new Matrix4(elbowFrame);
+    lower.matrix.translate(ARM_THICK*0.5, ARM_LEN, 0)
+                 .rotate(lowerWingAngle,0,0,1)
+                 .translate(-ARM_THICK*0.5,0,0)
+                 .scale(ARM_THICK,ARM_LEN,0.5);
+    lower.render();
+
+    const wLower = new Cube();
+    wLower.color=[1,1,1,1]; wLower.textureNum=-2;
+    wLower.matrix = new Matrix4(lower.matrix);
+    wLower.matrix.translate(0,0,0.7).scale(1,1,0.3);
+    //wLower.render();
+  }
+  buildWing(true);  // left
+  buildWing(false); // right
+
+  // ────────── FEET ──────────
+  const makeFoot = (tx) => {
+    const foot = new Cube();
+    foot.color=[1,0.5,0,1]; foot.textureNum=-2;
+    foot.matrix = new Matrix4(root);
+    foot.matrix.translate(tx,-.57,-.08)
+                .rotate(tx>0 ? 5 : -5,0,1,0)
+                .translate(0,0, tx>0?legStride:-legStride)
+                .scale(0.14,0.07,0.5);
+    foot.render();
+  };
+  makeFoot( 0.03); // right
+  makeFoot(-0.18); // left
+
+  // Shoulders + elbows (cylinders) omitted for brevity,
+  // but the pattern is the same: new Matrix4(root) → relative transforms
 }
